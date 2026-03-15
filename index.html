@@ -1382,22 +1382,27 @@ async function initDB(){
     getSetting('contact'),getSetting('lang')
   ]);
   // Products: DB is master, don't merge with local
-  if(p&&Array.isArray(p)){
-    D.products=p.map(prod=>{
-      if(typeof prod.variants==='string'){try{prod.variants=JSON.parse(prod.variants);}catch{prod.variants=[];}}
-      if(!Array.isArray(prod.variants))prod.variants=[];
-      // Parse imgs if string
-      if(typeof prod.imgs==='string'&&!prod.imgs.startsWith('[')&&!prod.imgs.startsWith('data:')){
-        try{prod.imgs=prod.imgs;}catch{}// keep as-is
-      }
-      // Normalize boolean columns - DB may return 0/1, 'true'/'false', or actual booleans
-      prod.hide=prod.hide===true||prod.hide===1||prod.hide==='true';
-      prod.feat=prod.feat===true||prod.feat===1||prod.feat==='true';
-      prod.fship=prod.fship===true||prod.fship===1||prod.fship==='true';
-      prod.revon=prod.revon!==false&&prod.revon!==0&&prod.revon!=='false';
-      return prod;
-    });
+    if(p&&Array.isArray(p)){
+    try{localStorage.removeItem('7w_products');}catch(e){}
+    const mapped=[];
+    for(const prod of p){
+      try{
+        if(typeof prod.variants==='string'){try{prod.variants=JSON.parse(prod.variants);}catch{prod.variants=[];}}
+        if(!Array.isArray(prod.variants))prod.variants=[];
+        if(typeof prod.imgs==='string'&&!prod.imgs.startsWith('[')&&!prod.imgs.startsWith('data:')){
+          prod.imgs=prod.imgs;
+        }
+        prod.hide=prod.hide===true||prod.hide===1||prod.hide==='true';
+        prod.feat=prod.feat===true||prod.feat===1||prod.feat==='true';
+        prod.fship=prod.fship===true||prod.fship===1||prod.fship==='true';
+        prod.revon=prod.revon!==false&&prod.revon!==0&&prod.revon!=='false';
+        mapped.push(prod);
+      }catch(e){console.warn('Skipped bad product id='+prod?.id,e);}
+    }
+    D.products=mapped;
+    console.log('✅ Products mapped:',D.products.length,'of',p.length);
   }
+
   if(u&&Array.isArray(u)) D.users=u;
   if(o&&Array.isArray(o)){
     const dbOrders=o.map(ord=>{
