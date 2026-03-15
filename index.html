@@ -1383,7 +1383,11 @@ async function initDB(){
   ]);
   // Products: DB is master, don't merge with local
   if(p&&Array.isArray(p)){
+    // Clear stale localStorage cache so DB always wins
+    try{localStorage.removeItem('7w_products');}catch(e){}
     D.products=p.map(prod=>{
+try{localStorage.removeItem('7w_products');}catch(e){}
+
       if(typeof prod.variants==='string'){try{prod.variants=JSON.parse(prod.variants);}catch{prod.variants=[];}}
       if(!Array.isArray(prod.variants))prod.variants=[];
       // Parse imgs if string
